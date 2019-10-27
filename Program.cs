@@ -15,6 +15,8 @@ namespace rpitest
         {
             Console.WriteLine("Hello World!");
 
+            ReceiveCloudToDeviceMessageAsync();
+
             deviceClient = DeviceClient.CreateFromConnectionString(connectionString);
             
             GpioController controller = new GpioController(PinNumberingScheme.Board);
@@ -62,6 +64,24 @@ namespace rpitest
             await deviceClient.SendEventAsync(message);
             Console.WriteLine("Sending Message {0}", messageString);
 
+        }
+
+        private static async void ReceiveCloudToDeviceMessageAsync()
+        {
+            Console.WriteLine("Receiving Cloud to Device messages from IoT Hub");
+
+            while (true)
+            {
+                Message receivedMessage = await deviceClient.ReceiveAsync();
+                
+                if (receivedMessage != null) 
+                {
+                    string receivedMessageString = Encoding.ASCII.GetString(receivedMessage.GetBytes());
+                    Console.WriteLine("Received message: {0}", receivedMessageString);
+                    await deviceClient.CompleteAsync(receivedMessage);
+                }
+                
+            }
         }
     }
 }
